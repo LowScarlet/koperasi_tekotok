@@ -1,25 +1,30 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Item } from "./types"; // Import tipe baru
+import { Item } from "./types"; // Import the new type
 import { getAllItems, addItem, updateItem, deleteItem } from "./db";
 import { getAllItems as getAllAnggotaItems } from "../anggota/db";
 import { Item as Anggota } from "../anggota/types";
+import { getAllItems as getAllStatusPinjamanItems } from "../statusPinjaman/db"; // New import
+import { getAllItems as getAllKategoriPinjamanItems } from "../kategoriPinjaman/db"; // New import
+import { Item as StatusPinjaman } from "../statusPinjaman/types"; // New type
+import { Item as KategoriPinjaman } from "../kategoriPinjaman/types"; // New type
 
 export default function Index() {
   const [items, setItems] = useState<Item[]>([]);
   const [anggotaItems, setAnggotaItems] = useState<Anggota[]>([]);
+  const [statusPinjamanItems, setStatusPinjamanItems] = useState<StatusPinjaman[]>([]); // State for status pinjaman
+  const [kategoriPinjamanItems, setKategoriPinjamanItems] = useState<KategoriPinjaman[]>([]); // State for kategori pinjaman
   const [loading, setLoading] = useState<boolean>(true);
   const [updateId, setUpdateId] = useState<IDBValidKey | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<IDBValidKey | null>(null);
 
   const def: Item = {
     idAnggota: "",
+    idStatusPinjaman: "", // Updated to match new interface
+    idKategoriPinjaman: "", // Updated to match new interface
     jumlah: 0,
     tanggal: "",
-    tanggalPinjam: "",
-    keterangan: "",
-    status: "",
   };
 
   const [formData, setFormData] = useState<Item>(def);
@@ -27,12 +32,16 @@ export default function Index() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [allItems, allAnggota] = await Promise.all([
+      const [allItems, allAnggota, allStatusPinjaman, allKategoriPinjaman] = await Promise.all([
         getAllItems(),
         getAllAnggotaItems(),
+        getAllStatusPinjamanItems(), // Fetch status pinjaman data
+        getAllKategoriPinjamanItems(), // Fetch kategori pinjaman data
       ]);
       setItems(allItems);
       setAnggotaItems(allAnggota);
+      setStatusPinjamanItems(allStatusPinjaman); // Set status pinjaman data
+      setKategoriPinjamanItems(allKategoriPinjaman); // Set kategori pinjaman data
       setLoading(false);
     };
     fetchData();
@@ -71,11 +80,10 @@ export default function Index() {
     setUpdateId(item.id!);
     setFormData({
       idAnggota: item.idAnggota,
+      idStatusPinjaman: item.idStatusPinjaman,
+      idKategoriPinjaman: item.idKategoriPinjaman,
       jumlah: item.jumlah,
       tanggal: item.tanggal,
-      tanggalPinjam: item.tanggalPinjam,
-      keterangan: item.keterangan,
-      status: item.status,
     });
 
     const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
@@ -145,6 +153,52 @@ export default function Index() {
             </div>
 
             <div className="form-control">
+              <label className="label" htmlFor="idStatusPinjaman">
+                <span className="font-semibold label-text">ID Status Pinjaman</span>
+              </label>
+              <select
+                id="idStatusPinjaman"
+                name="idStatusPinjaman"
+                value={formData.idStatusPinjaman.toString()}
+                onChange={handleChange}
+                className="w-full select-bordered select"
+                required
+              >
+                <option value="" disabled>
+                  Pilih Status Pinjaman
+                </option>
+                {statusPinjamanItems.map((statusPinjaman, index) => (
+                  <option key={index} value={statusPinjaman.id?.toString()}>
+                    {statusPinjaman.status} ({statusPinjaman.id?.toString()})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-control">
+              <label className="label" htmlFor="idKategoriPinjaman">
+                <span className="font-semibold label-text">ID Kategori Pinjaman</span>
+              </label>
+              <select
+                id="idKategoriPinjaman"
+                name="idKategoriPinjaman"
+                value={formData.idKategoriPinjaman.toString()}
+                onChange={handleChange}
+                className="w-full select-bordered select"
+                required
+              >
+                <option value="" disabled>
+                  Pilih Kategori Pinjaman
+                </option>
+                {kategoriPinjamanItems.map((kategoriPinjaman, index) => (
+                  <option key={index} value={kategoriPinjaman.id?.toString()}>
+                    {kategoriPinjaman.kategori} ({kategoriPinjaman.id?.toString()})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-control">
               <label className="label" htmlFor="jumlah">
                 <span className="label-text">Jumlah</span>
               </label>
@@ -175,58 +229,6 @@ export default function Index() {
               />
             </div>
 
-            <div className="form-control">
-              <label className="label" htmlFor="tanggalPinjam">
-                <span className="label-text">Tanggal Pinjam</span>
-              </label>
-              <input
-                id="tanggalPinjam"
-                name="tanggalPinjam"
-                type="date"
-                value={formData.tanggalPinjam}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="keterangan">
-                <span className="label-text">Keterangan</span>
-              </label>
-              <input
-                id="keterangan"
-                name="keterangan"
-                type="text"
-                placeholder="Keterangan"
-                value={formData.keterangan}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="status">
-                <span className="label-text">Status</span>
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full select-bordered select"
-                required
-              >
-                <option value="" disabled>
-                  Pilih Status
-                </option>
-                <option value="disetujui">Disetujui</option>
-                <option value="ditolak">Ditolak</option>
-                <option value="lunas">Lunas</option>
-              </select>
-            </div>
-
             <div className="flex justify-end space-x-2 form-control mt-4">
               <button type="submit" className="btn btn-primary">
                 {updateId ? "Update Data" : "Tambah Data"}
@@ -248,11 +250,10 @@ export default function Index() {
                 <th>No</th>
                 <th>ID</th>
                 <th>ID Anggota</th>
+                <th>ID Status Pinjaman</th>
+                <th>ID Kategori Pinjaman</th>
                 <th>Jumlah</th>
                 <th>Tanggal</th>
-                <th>Tanggal Pinjam</th>
-                <th>Keterangan</th>
-                <th>Status</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -262,11 +263,10 @@ export default function Index() {
                   <td>{index + 1}</td>
                   <td>{item.id?.toString()}</td>
                   <td>{item.idAnggota.toString()}</td>
+                  <td>{item.idStatusPinjaman.toString()}</td>
+                  <td>{item.idKategoriPinjaman.toString()}</td>
                   <td>{item.jumlah}</td>
                   <td>{item.tanggal}</td>
-                  <td>{item.tanggalPinjam}</td>
-                  <td>{item.keterangan}</td>
-                  <td>{item.status}</td>
                   <td className="space-x-2">
                     <button
                       className="btn btn-primary btn-sm"

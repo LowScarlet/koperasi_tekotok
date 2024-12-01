@@ -11,10 +11,8 @@ export default function Index() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<IDBValidKey | null>(null);
 
   const def: Item = {
-    nama: "",
-    alamat: "",
-    noTelepon: "",
-    tanggalDaftar: "",
+    kode: "",
+    kategori: "",
   };
 
   const [formData, setFormData] = useState<Item>(def);
@@ -56,10 +54,8 @@ export default function Index() {
   const handleSelectItemForUpdate = (item: Item) => {
     setUpdateId(item.id!);
     setFormData({
-      nama: item.nama || "",
-      alamat: item.alamat || "",
-      noTelepon: item.noTelepon || "",
-      tanggalDaftar: item.tanggalDaftar || "",
+      kode: item.kode || "",
+      kategori: item.kategori || "",
     });
     const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
     modal.showModal();
@@ -105,15 +101,15 @@ export default function Index() {
 
           <form onSubmit={handleAddOrUpdateItem} className="space-y-4">
             <div className="form-control">
-              <label className="label" htmlFor="nama">
-                <span className="label-text">Nama</span>
+              <label className="label" htmlFor="kode">
+                <span className="label-text">Kode</span>
               </label>
               <input
-                id="nama"
-                name="nama"
+                id="kode"
+                name="kode"
                 type="text"
-                placeholder="Nama"
-                value={formData.nama}
+                placeholder="Kode"
+                value={formData.kode}
                 onChange={handleChange}
                 className="input-bordered w-full input"
                 required
@@ -121,46 +117,15 @@ export default function Index() {
             </div>
 
             <div className="form-control">
-              <label className="label" htmlFor="alamat">
-                <span className="label-text">Alamat</span>
+              <label className="label" htmlFor="kategori">
+                <span className="label-text">Kategori</span>
               </label>
               <input
-                id="alamat"
-                name="alamat"
+                id="kategori"
+                name="kategori"
                 type="text"
-                placeholder="Alamat"
-                value={formData.alamat}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="noTelepon">
-                <span className="label-text">No Telepon</span>
-              </label>
-              <input
-                id="noTelepon"
-                name="noTelepon"
-                type="text"
-                placeholder="No Telepon"
-                value={formData.noTelepon}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="tanggalDaftar">
-                <span className="label-text">Tanggal Daftar</span>
-              </label>
-              <input
-                id="tanggalDaftar"
-                name="tanggalDaftar"
-                type="date"
-                value={formData.tanggalDaftar}
+                placeholder="Kategori"
+                value={formData.kategori}
                 onChange={handleChange}
                 className="input-bordered w-full input"
                 required
@@ -187,10 +152,8 @@ export default function Index() {
               <tr>
                 <th>No</th>
                 <th>Id</th>
-                <th>Nama</th>
-                <th>Alamat</th>
-                <th>No Telepon</th>
-                <th>Tanggal Daftar</th>
+                <th>Kode</th>
+                <th>Kategori</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -199,10 +162,8 @@ export default function Index() {
                 <tr key={item.id?.toString() || index}>
                   <td>{index + 1}</td>
                   <td>{item.id?.toString()}</td>
-                  <td>{item.nama}</td>
-                  <td>{item.alamat}</td>
-                  <td>{item.noTelepon}</td>
-                  <td>{item.tanggalDaftar}</td>
+                  <td>{item.kode}</td>
+                  <td>{item.kategori}</td>
                   <td className="space-x-2">
                     <button
                       className="btn btn-primary btn-sm"

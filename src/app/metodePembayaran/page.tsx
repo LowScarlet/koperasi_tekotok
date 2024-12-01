@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Item } from "./types";
+import { Item } from "./types"; 
 import { getAllItems, addItem, updateItem, deleteItem } from "./db";
 
 export default function Index() {
@@ -11,6 +11,7 @@ export default function Index() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<IDBValidKey | null>(null);
 
   const def: Item = {
+    kode: "",
     nama: "",
     deskripsi: "",
     biaya: 0,
@@ -30,10 +31,9 @@ export default function Index() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "biaya" ? parseFloat(value) : value,
+      [name]: name === "biaya" ? (isNaN(parseFloat(value)) ? 0 : parseFloat(value)) : value,
     }));
   };
 
@@ -60,6 +60,7 @@ export default function Index() {
   const handleSelectItemForUpdate = (item: Item) => {
     setUpdateId(item.id!);
     setFormData({
+      kode: item.kode,
       nama: item.nama,
       deskripsi: item.deskripsi,
       biaya: item.biaya,
@@ -76,6 +77,13 @@ export default function Index() {
     setItems(allItems);
     setDeleteConfirmId(null);
     setLoading(false);
+  };
+
+  const handleCloseModal = () => {
+    setFormData(def);
+    setUpdateId(null);
+    const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
+    modal.close();
   };
 
   return (
@@ -97,10 +105,7 @@ export default function Index() {
         <form
           method="dialog"
           className="modal-backdrop"
-          onClick={() => {
-            setFormData(def);
-            setUpdateId(null);
-          }}
+          onClick={handleCloseModal}
         >
           <button>close</button>
         </form>
@@ -108,6 +113,22 @@ export default function Index() {
           <h3 className="font-bold text-lg">{updateId ? "Update Data" : "Tambah Data"}</h3>
 
           <form onSubmit={handleAddOrUpdateItem} className="space-y-4">
+            <div className="form-control">
+              <label className="label" htmlFor="kode">
+                <span className="font-semibold label-text">Kode</span>
+              </label>
+              <input
+                id="kode"
+                name="kode"
+                type="text"
+                placeholder="Kode Item"
+                value={formData.kode}
+                onChange={handleChange}
+                className="input-bordered w-full input"
+                required
+              />
+            </div>
+
             <div className="form-control">
               <label className="label" htmlFor="nama">
                 <span className="font-semibold label-text">Nama</span>
@@ -175,6 +196,7 @@ export default function Index() {
               <tr>
                 <th>No</th>
                 <th>ID</th>
+                <th>Kode</th>
                 <th>Nama</th>
                 <th>Deskripsi</th>
                 <th>Biaya</th>
@@ -186,6 +208,7 @@ export default function Index() {
                 <tr key={item.id?.toString() || index}>
                   <td>{index + 1}</td>
                   <td>{item.id?.toString()}</td>
+                  <td>{item.kode}</td>
                   <td>{item.nama}</td>
                   <td>{item.deskripsi}</td>
                   <td>{item.biaya}</td>

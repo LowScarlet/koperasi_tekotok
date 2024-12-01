@@ -1,47 +1,55 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Item } from "./types"; // Impor tipe baru
+import { Item } from "./types"; // Import the new type for transactions
 import { getAllItems, addItem, updateItem, deleteItem } from "./db";
 import { getAllItems as getAllPinjamanItems } from "../pinjaman/db";
 import { Item as Pinjaman } from "../pinjaman/types";
 import { getAllItems as getAllMetodeItems } from "../metodePembayaran/db";
 import { Item as MetodePembayaran } from "../metodePembayaran/types";
+import { getAllItems as getAllAnggotaItems } from "../anggota/db";
+import { Item as Anggota } from "../anggota/types";
 
 export default function Index() {
   const [items, setItems] = useState<Item[]>([]);
   const [pinjamanItems, setPinjamanItems] = useState<Pinjaman[]>([]);
   const [metodeItems, setMetodeItems] = useState<MetodePembayaran[]>([]);
+  const [anggotaItems, setAnggotaItems] = useState<Anggota[]>([]); // Add anggotaItems state
   const [loading, setLoading] = useState<boolean>(true);
   const [updateId, setUpdateId] = useState<IDBValidKey | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<IDBValidKey | null>(null);
 
+  // Default form data structure
   const def: Item = {
-    idPinjaman: "",
-    idMetodePembayaran: "",
+    idPinjaman: "", // This is a required field
+    idMetodePembayaran: "", // This is a required field
+    idAnggota: "", // Add idAnggota
     jumlah: 0,
-    tanggal: "",
-    keterangan: "",
+    tanggal: "", // Format date as string
   };
 
   const [formData, setFormData] = useState<Item>(def);
 
+  // Fetching all the items, pinjaman, metode data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [allItems, allPinjaman, allMetode] = await Promise.all([
+      const [allItems, allPinjaman, allMetode, allAnggota] = await Promise.all([
         getAllItems(),
         getAllPinjamanItems(),
         getAllMetodeItems(),
+        getAllAnggotaItems(), // Fetching anggota data
       ]);
       setItems(allItems);
       setPinjamanItems(allPinjaman);
       setMetodeItems(allMetode);
+      setAnggotaItems(allAnggota); // Set anggota data
       setLoading(false);
     };
     fetchData();
   }, []);
 
+  // Handle changes in the form inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
@@ -51,6 +59,7 @@ export default function Index() {
     }));
   };
 
+  // Handle Add or Update Item
   const handleAddOrUpdateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -71,20 +80,22 @@ export default function Index() {
     modal.close();
   };
 
+  // Handle selecting an item for updating
   const handleSelectItemForUpdate = (item: Item) => {
     setUpdateId(item.id!);
     setFormData({
       idPinjaman: item.idPinjaman,
       idMetodePembayaran: item.idMetodePembayaran,
+      idAnggota: item.idAnggota, // Add idAnggota in the update
       jumlah: item.jumlah,
       tanggal: item.tanggal,
-      keterangan: item.keterangan,
     });
 
     const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
     modal.showModal();
   };
 
+  // Handle deleting an item
   const handleDeleteItem = async (id: IDBValidKey) => {
     setLoading(true);
     await deleteItem(id);
@@ -109,6 +120,7 @@ export default function Index() {
         </button>
       </div>
 
+      {/* Modal Form */}
       <dialog id="my_modal_1" className="modal">
         <form
           method="dialog"
@@ -124,6 +136,31 @@ export default function Index() {
           <h3 className="font-bold text-lg">{updateId ? "Update Data" : "Tambah Data"}</h3>
 
           <form onSubmit={handleAddOrUpdateItem} className="space-y-4">
+            {/* Anggota Dropdown */}
+            <div className="form-control">
+              <label className="label" htmlFor="idAnggota">
+                <span className="font-semibold label-text">ID Anggota</span>
+              </label>
+              <select
+                id="idAnggota"
+                name="idAnggota"
+                value={formData.idAnggota.toString()}
+                onChange={handleChange}
+                className="w-full select-bordered select"
+                required
+              >
+                <option value="" disabled>
+                  Pilih Anggota
+                </option>
+                {anggotaItems.map((anggota, index) => (
+                  <option key={index} value={anggota.id?.toString()}>
+                    {anggota.nama} ({anggota.id?.toString()})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Pinjaman Dropdown */}
             <div className="form-control">
               <label className="label" htmlFor="idPinjaman">
                 <span className="font-semibold label-text">ID Pinjaman</span>
@@ -147,6 +184,7 @@ export default function Index() {
               </select>
             </div>
 
+            {/* Metode Pembayaran Dropdown */}
             <div className="form-control">
               <label className="label" htmlFor="idMetodePembayaran">
                 <span className="font-semibold label-text">ID Metode Pembayaran</span>
@@ -170,6 +208,7 @@ export default function Index() {
               </select>
             </div>
 
+            {/* Jumlah Input */}
             <div className="form-control">
               <label className="label" htmlFor="jumlah">
                 <span className="label-text">Jumlah</span>
@@ -186,22 +225,7 @@ export default function Index() {
               />
             </div>
 
-            <div className="form-control">
-              <label className="label" htmlFor="keterangan">
-                <span className="label-text">Keterangan</span>
-              </label>
-              <input
-                id="keterangan"
-                name="keterangan"
-                type="text"
-                placeholder="Keterangan"
-                value={formData.keterangan}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
+            {/* Tanggal Input */}
             <div className="form-control">
               <label className="label" htmlFor="tanggal">
                 <span className="label-text">Tanggal</span>
@@ -226,6 +250,7 @@ export default function Index() {
         </div>
       </dialog>
 
+      {/* Data Table */}
       {loading ? (
         <p className="font-semibold text-center text-lg">Memuat Data...</p>
       ) : items.length === 0 ? (
@@ -237,10 +262,10 @@ export default function Index() {
               <tr>
                 <th>No</th>
                 <th>ID</th>
+                <th>ID Anggota</th>
                 <th>ID Pinjaman</th>
                 <th>ID Metode</th>
                 <th>Jumlah</th>
-                <th>Keterangan</th>
                 <th>Tanggal</th>
                 <th>Aksi</th>
               </tr>
@@ -250,10 +275,10 @@ export default function Index() {
                 <tr key={item.id?.toString() || index}>
                   <td>{index + 1}</td>
                   <td>{item.id?.toString()}</td>
+                  <td>{item.idAnggota.toString()}</td>
                   <td>{item.idPinjaman.toString()}</td>
                   <td>{item.idMetodePembayaran.toString()}</td>
                   <td>{item.jumlah}</td>
-                  <td>{item.keterangan}</td>
                   <td>{item.tanggal}</td>
                   <td className="space-x-2">
                     <button

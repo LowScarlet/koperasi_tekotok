@@ -4,5 +4,4 @@ export interface Item {
   alamat: string;
   noTelepon: string;
   tanggalDaftar: string;
-  status: string;
 }

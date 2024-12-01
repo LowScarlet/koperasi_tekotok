@@ -1,9 +1,8 @@
 export interface Item {
   id?: IDBValidKey;
-  idAnggota: IDBValidKey; // Relasi ke anggota
+  idAnggota: IDBValidKey;
+  idStatusPinjaman: IDBValidKey;
+  idKategoriPinjaman: IDBValidKey;
   jumlah: number;
   tanggal: string;
-  tanggalPinjam: string;
-  keterangan: string;
-  status: string; // Contoh: "disetujui", "ditolak", "lunas"
 }

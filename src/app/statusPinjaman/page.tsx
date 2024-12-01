@@ -10,11 +10,10 @@ export default function Index() {
   const [updateId, setUpdateId] = useState<IDBValidKey | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<IDBValidKey | null>(null);
 
+  // Default values for a new item
   const def: Item = {
-    nama: "",
-    alamat: "",
-    noTelepon: "",
-    tanggalDaftar: "",
+    kode: "",
+    status: "",
   };
 
   const [formData, setFormData] = useState<Item>(def);
@@ -38,11 +37,13 @@ export default function Index() {
   const handleAddOrUpdateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     if (updateId) {
       await updateItem(updateId, formData);
     } else {
       await addItem(formData);
     }
+
     const allItems = await getAllItems();
     setItems(allItems);
     setFormData(def);
@@ -56,10 +57,8 @@ export default function Index() {
   const handleSelectItemForUpdate = (item: Item) => {
     setUpdateId(item.id!);
     setFormData({
-      nama: item.nama || "",
-      alamat: item.alamat || "",
-      noTelepon: item.noTelepon || "",
-      tanggalDaftar: item.tanggalDaftar || "",
+      kode: item.kode || "",
+      status: item.status || "",
     });
     const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
     modal.showModal();
@@ -105,15 +104,15 @@ export default function Index() {
 
           <form onSubmit={handleAddOrUpdateItem} className="space-y-4">
             <div className="form-control">
-              <label className="label" htmlFor="nama">
-                <span className="label-text">Nama</span>
+              <label className="label" htmlFor="kode">
+                <span className="label-text">Kode</span>
               </label>
               <input
-                id="nama"
-                name="nama"
+                id="kode"
+                name="kode"
                 type="text"
-                placeholder="Nama"
-                value={formData.nama}
+                placeholder="Kode"
+                value={formData.kode}
                 onChange={handleChange}
                 className="input-bordered w-full input"
                 required
@@ -121,46 +120,15 @@ export default function Index() {
             </div>
 
             <div className="form-control">
-              <label className="label" htmlFor="alamat">
-                <span className="label-text">Alamat</span>
+              <label className="label" htmlFor="status">
+                <span className="label-text">Status</span>
               </label>
               <input
-                id="alamat"
-                name="alamat"
+                id="status"
+                name="status"
                 type="text"
-                placeholder="Alamat"
-                value={formData.alamat}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="noTelepon">
-                <span className="label-text">No Telepon</span>
-              </label>
-              <input
-                id="noTelepon"
-                name="noTelepon"
-                type="text"
-                placeholder="No Telepon"
-                value={formData.noTelepon}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="tanggalDaftar">
-                <span className="label-text">Tanggal Daftar</span>
-              </label>
-              <input
-                id="tanggalDaftar"
-                name="tanggalDaftar"
-                type="date"
-                value={formData.tanggalDaftar}
+                placeholder="Status"
+                value={formData.status}
                 onChange={handleChange}
                 className="input-bordered w-full input"
                 required
@@ -187,10 +155,8 @@ export default function Index() {
               <tr>
                 <th>No</th>
                 <th>Id</th>
-                <th>Nama</th>
-                <th>Alamat</th>
-                <th>No Telepon</th>
-                <th>Tanggal Daftar</th>
+                <th>Kode</th>
+                <th>Status</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -199,10 +165,8 @@ export default function Index() {
                 <tr key={item.id?.toString() || index}>
                   <td>{index + 1}</td>
                   <td>{item.id?.toString()}</td>
-                  <td>{item.nama}</td>
-                  <td>{item.alamat}</td>
-                  <td>{item.noTelepon}</td>
-                  <td>{item.tanggalDaftar}</td>
+                  <td>{item.kode}</td>
+                  <td>{item.status}</td>
                   <td className="space-x-2">
                     <button
                       className="btn btn-primary btn-sm"

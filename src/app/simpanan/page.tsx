@@ -5,20 +5,22 @@ import { Item } from "./types"; // Impor tipe baru
 import { getAllItems, addItem, updateItem, deleteItem } from "./db";
 import { getAllItems as getAllAnggotaItems } from "../anggota/db";
 import { Item as Anggota } from "../anggota/types";
+import { getAllItems as getAllKategoriSimpananItems } from "../kategoriSimpanan/db"; // New import for kategori simpanan
+import { Item as KategoriSimpanan } from "../kategoriSimpanan/types"; // New type for kategori simpanan
 
 export default function Index() {
   const [items, setItems] = useState<Item[]>([]);
   const [anggotaItems, setAnggotaItems] = useState<Anggota[]>([]);
+  const [kategoriSimpananItems, setKategoriSimpananItems] = useState<KategoriSimpanan[]>([]); // State for kategori simpanan
   const [loading, setLoading] = useState<boolean>(true);
   const [updateId, setUpdateId] = useState<IDBValidKey | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<IDBValidKey | null>(null);
 
   const def: Item = {
     idAnggota: "",
+    idKategoriSimpanan: "", // Default for kategori simpanan
     jumlah: 0,
     tanggal: "",
-    keterangan: "", // Default untuk keterangan
-    jenis: "",
   };
 
   const [formData, setFormData] = useState<Item>(def);
@@ -26,12 +28,14 @@ export default function Index() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [allItems, allAnggota] = await Promise.all([
+      const [allItems, allAnggota, allKategoriSimpanan] = await Promise.all([
         getAllItems(),
         getAllAnggotaItems(),
+        getAllKategoriSimpananItems(), // Fetch kategori simpanan data
       ]);
       setItems(allItems);
       setAnggotaItems(allAnggota);
+      setKategoriSimpananItems(allKategoriSimpanan); // Set kategori simpanan data
       setLoading(false);
     };
     fetchData();
@@ -42,7 +46,7 @@ export default function Index() {
 
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "jumlah" ? parseFloat(value) : value, // Konversi jumlah ke angka
+      [name]: name === "jumlah" ? parseFloat(value) : value, // Convert jumlah to number
     }));
   };
 
@@ -70,10 +74,9 @@ export default function Index() {
     setUpdateId(item.id!);
     setFormData({
       idAnggota: item.idAnggota,
+      idKategoriSimpanan: item.idKategoriSimpanan, // Update for kategori simpanan
       jumlah: item.jumlah,
       tanggal: item.tanggal,
-      keterangan: item.keterangan, // Update keterangan
-      jenis: item.jenis,
     });
 
     const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
@@ -143,6 +146,29 @@ export default function Index() {
             </div>
 
             <div className="form-control">
+              <label className="label" htmlFor="idKategoriSimpanan">
+                <span className="font-semibold label-text">ID Kategori Simpanan</span>
+              </label>
+              <select
+                id="idKategoriSimpanan"
+                name="idKategoriSimpanan"
+                value={formData.idKategoriSimpanan.toString()}
+                onChange={handleChange}
+                className="w-full select-bordered select"
+                required
+              >
+                <option value="" disabled>
+                  Pilih Kategori Simpanan
+                </option>
+                {kategoriSimpananItems.map((kategoriSimpanan, index) => (
+                  <option key={index} value={kategoriSimpanan.id?.toString()}>
+                    {kategoriSimpanan.kategori} ({kategoriSimpanan.id?.toString()})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-control">
               <label className="label" htmlFor="jumlah">
                 <span className="label-text">Jumlah</span>
               </label>
@@ -173,43 +199,6 @@ export default function Index() {
               />
             </div>
 
-            <div className="form-control">
-              <label className="label" htmlFor="keterangan">
-                <span className="label-text">Keterangan</span>
-              </label>
-              <input
-                id="keterangan"
-                name="keterangan"
-                type="text"
-                placeholder="Keterangan"
-                value={formData.keterangan}
-                onChange={handleChange}
-                className="input-bordered w-full input"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label" htmlFor="jenis">
-                <span className="label-text">Jenis</span>
-              </label>
-              <select
-                id="jenis"
-                name="jenis"
-                value={formData.jenis}
-                onChange={handleChange}
-                className="w-full select-bordered select"
-                required
-              >
-                <option value="" disabled>
-                  Pilih Jenis
-                </option>
-                <option value="pokok">Pokok</option>
-                <option value="wajib">Wajib</option>
-                <option value="sukarela">Sukarela</option>
-              </select>
-            </div>
-
             <div className="flex justify-end space-x-2 form-control mt-4">
               <button type="submit" className="btn btn-primary">
                 {updateId ? "Update Data" : "Tambah Data"}
@@ -231,10 +220,9 @@ export default function Index() {
                 <th>No</th>
                 <th>ID</th>
                 <th>ID Anggota</th>
+                <th>ID Kategori Simpanan</th>
                 <th>Jumlah</th>
                 <th>Tanggal</th>
-                <th>Keterangan</th>
-                <th>Jenis</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -244,10 +232,9 @@ export default function Index() {
                   <td>{index + 1}</td>
                   <td>{item.id?.toString()}</td>
                   <td>{item.idAnggota.toString()}</td>
+                  <td>{item.idKategoriSimpanan.toString()}</td>
                   <td>{item.jumlah}</td>
                   <td>{item.tanggal}</td>
-                  <td>{item.keterangan}</td>
-                  <td>{item.jenis}</td>
                   <td className="space-x-2">
                     <button
                       className="btn btn-primary btn-sm"
